@@ -1,0 +1,73 @@
+(* This is the preamble where you can have arbitrary sml code. For us
+it is empty *)
+
+%%
+(* The terminals or tokens of the language *)
+%term CONST of int
+    | PLUS
+    | MINUS
+    | MUL
+    | DIV
+    | OP
+    | CL
+    | ASSIGN
+    | PRINT
+    | VAR of string
+    | EOF
+    | NEWLINE
+    | SEMICOLON
+    | FOR | TO | DO | DONE
+
+(* The nonterminals of the language *)
+%nonterm EXP     of Ast.Expr
+       | EXPS    of Ast.Expr list
+       | STMT    of Ast.Stmt
+       | STMTS   of Ast.Stmt list
+       | PROGRAM of Ast.Stmt list
+
+%eop EOF (* What token to use as end of parsing token              *)
+%verbose (* Generates a printed form of the table in expr.grm.desc *)
+%pure
+
+
+%name Expr (* The prefix to use on the name of LrValFun structure *)
+
+
+%noshift EOF
+(*
+
+Operator precedence and associativity. The %left says the operator is
+left associative and the precedence increase as you go down this list.
+
+*)
+
+%left PLUS MINUS  (* + and - are of same precedence *)
+%left MUL DIV     (* higher than + and -            *)
+%left OP CL
+
+(* The type that captures position in the input *)
+%pos int
+
+%%
+
+PROGRAM     : STMTS                ( STMTS )
+
+
+STMTS       : (* empty *)          ( []                )
+            | STMT NEWLINE STMTS   ( STMT :: STMTS     )
+
+EXP         : CONST                ( Ast.Const CONST )
+            | VAR                  ( Ast.Var   VAR   )
+            | EXP PLUS EXP         ( Ast.plus  EXP1 EXP2)
+            | EXP MINUS EXP        ( Ast.minus EXP1 EXP2 )
+            | EXP MUL   EXP        ( Ast.mul   EXP1 EXP2 )
+            | EXP DIV   EXP        ( Ast.div   EXP1 EXP2 )
+            | OP EXP PLUS EXP CL   ( Ast.plus  EXP1 EXP2 )
+            | OP EXP MINUS EXP CL  ( Ast.minus EXP1 EXP2 )
+            | OP EXP MUL EXP CL    ( Ast.mul   EXP1 EXP2 )
+            | OP EXP DIV EXP CL    ( Ast.div   EXP1 EXP2 )
+        
+STMT    : VAR ASSIGN EXP SEMICOLON      ( Ast.assign VAR EXP)
+        | PRINT EXP SEMICOLON            ( Ast.Print EXP)
+        | FOR VAR ASSIGN CONST TO CONST NEWLINE DO NEWLINE STMTS DONE SEMICOLON ( Ast.for (Ast.Var VAR) (Ast.Const CONST1) (Ast.Const CONST2) STMTS ) 
+    

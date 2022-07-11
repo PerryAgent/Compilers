@@ -1,0 +1,48 @@
+Pretty Printing IR:
+
+.globl main
+main:
+li t1, 5
+li t2, 0
+li t3, 100
+Label_No_1:
+bgt t2, t3, Label_No_2
+move t5 t1
+move t6 t2
+add t4, t5, t6
+move t9 t4
+li t8, 1
+syscall
+addi t2, t2, 1
+j Label_No_1
+Label_No_2:
+li t8, 10
+syscall
+
+
+Basic Blocks:
+
+.globl main
+
+main:
+li $t1, 5
+li $t2, 0
+li $t3, 100
+
+Label_No_1:
+bgt $t2, $t3, Label_No_2
+
+move $t5 $t1
+move $t6 $t2
+add $t4, $t5, $t6
+move $a0 $t4
+li $v0, 1
+syscall
+addi $t2, $t2, 1
+j Label_No_1
+
+
+Label_No_2:
+li $v0, 10
+syscall
+
